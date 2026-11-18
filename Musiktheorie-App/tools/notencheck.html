@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Notenbild-Prüfung</title>
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="../css/app.css">
+<style>
+  body { padding: 16px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 10px; }
+  .cell { background: var(--surface); border-radius: 12px; padding: 8px 10px; }
+  .cell h4 { margin: 0; font-size: .85rem; }
+  .cell p { margin: 0; font-size: .75rem; color: var(--muted); }
+  h2 { margin-top: 24px; }
+</style>
+</head>
+<body>
+<h1>Notenbild-Prüfung (intern)</h1>
+<p class="muted">Alle Tonleitern des Umfangs, erzeugt aus dem Theorie-Kern und gesetzt mit abcjs.</p>
+<div id="out"></div>
+<script src="../vendor/abcjs-basic-min.js"></script>
+<script type="module">
+import * as T from '../js/core/theory.js';
+import { renderPitches, renderKeySignature, renderCustomKeySignature } from '../js/ui/notation.js';
+const out = document.getElementById('out');
+const params = new URLSearchParams(location.search);
+const section = params.get('s') || 'treble';
+function sec(title) { const h = document.createElement('h2'); h.textContent = title; out.append(h); const g = document.createElement('div'); g.className = 'grid'; out.append(g); return g; }
+function cell(g, title, sub) { const c = document.createElement('div'); c.className = 'cell'; c.innerHTML = `<h4>${title}</h4><p>${sub}</p>`; const b = document.createElement('div'); c.append(b); g.append(c); return b; }
+const keys = [...T.DUR_KEYS.map((k) => [k, 'dur']), ...T.MOLL_KEYS.map((k) => [k, 'moll'])];
+const slur = (p, m) => { const d = T.halfStepDegrees(m); return p.map((x, i) => ({ pitch: x, pre: d.includes(i + 1) ? '(' : '', post: d.includes(i) ? ')' : '' })); };
+const oct = (k, clef) => clef === 'bass' ? (k.step <= 1 ? 3 : 2) : 4;
+if (section === 'treble' || section === 'bass') {
+  const clef = section;
+  const g1 = sec(`${clef === 'bass' ? 'Bassschlüssel' : 'Violinschlüssel'}: mit Generalvorzeichen + Halbtonbögen`);
+  for (const [k, m] of keys) {
+    const p = T.scale({ ...k, octave: oct(k, clef) }, m);
+    renderPitches(cell(g1, T.keyName(k, m), p.map(T.germanName).join(' ') + ' · GV: ' + (T.keySignature(k, m).map(T.germanName).join(' ') || '–')), p, { items: slur(p, m), tonic: k, mode: m, withKey: true, clef });
+  }
+  const g2 = sec(`${clef === 'bass' ? 'Bassschlüssel' : 'Violinschlüssel'}: ohne Generalvorzeichen (Versetzungszeichen)`);
+  for (const [k, m] of keys) {
+    const p = T.scale({ ...k, octave: oct(k, clef) }, m);
+    renderPitches(cell(g2, T.keyName(k, m), p.map(T.germanName).join(' ')), p, { clef });
+  }
+}
+if (section === 'keys') {
+  const g = sec('Generalvorzeichen allein (Violin / Bass)');
+  for (const [k, m] of keys.slice(0, 7)) {
+    renderKeySignature(cell(g, T.keyName(k, m) + ' – Violin', T.keySignature(k, m).map(T.germanName).join(' ') || '–'), k, m, 'treble');
+    renderKeySignature(cell(g, T.keyName(k, m) + ' – Bass', T.keySignature(k, m).map(T.germanName).join(' ') || '–'), k, m, 'bass');
+  }
+  const g2 = sec('Selbst gesetzte Generalvorzeichen (Aufgabe „Generalvorzeichen setzen“)');
+  const sh = T.SHARP_ORDER.slice(0, 4).map((s) => ({ step: s, alter: 1 }));
+  const fl = T.FLAT_ORDER.slice(0, 4).map((s) => ({ step: s, alter: -1 }));
+  for (let n = 1; n <= 4; n++) renderCustomKeySignature(cell(g2, `${n} Kreuz(e) in richtiger Folge`, sh.slice(0, n).map(T.germanName).join(' ')), sh.slice(0, n));
+  for (let n = 1; n <= 4; n++) renderCustomKeySignature(cell(g2, `${n} B in richtiger Folge`, fl.slice(0, n).map(T.germanName).join(' ')), fl.slice(0, n));
+  renderCustomKeySignature(cell(g2, 'Falsche Folge (cis vor fis)', 'cis fis'), [sh[1], sh[0]]);
+  const g3 = sec('Pentatonik');
+  for (const k of [T.DUR_KEYS[0], T.DUR_KEYS[1], T.DUR_KEYS[4]]) {
+    const p = T.majorPentatonic({ ...k, octave: 4 });
+    renderPitches(cell(g3, T.capitalize(T.germanName(k)) + '-Dur-Pentatonik', p.map(T.germanName).join(' ')), p, {});
+  }
+  const g4 = sec('Fehler-Aufgabe: Auflösungszeichen innerhalb des Takts');
+  const d = T.scale({ step: 1, alter: 0, octave: 4 }, 'dur');
+  const wrong = d.map((x) => ({ ...x })); wrong[2].alter = 0;
+  renderPitches(cell(g4, 'D-Dur mit fehlendem Kreuz (f statt fis)', wrong.map(T.germanName).join(' ')), wrong, {});
+}
+if (section === 'rhythm') {
+  const { renderRhythm } = await import('../js/modules/common.js');
+  const R = await import('../js/core/rhythm.js');
+  const g0 = sec('Modul 1: einzelne Notenwerte und Pausen (Violinschlüssel, Mittellinie)');
+  for (const u of [48, 24, 12, 6, 3, 36, 18, 9]) renderRhythm(cell(g0, `Note ${u} Einheiten`, R.valueName(u)), [[{ u }]], '4/4', { oneLine: false, showMeter: false, staffwidth: 160 });
+  for (const u of [48, 24, 12, 6, 3]) renderRhythm(cell(g0, `Pause ${u} Einheiten`, R.valueName(u, true)), [[{ u, rest: true }]], '4/4', { oneLine: false, showMeter: false, staffwidth: 160 });
+  const g1 = sec('Modul 1: Takte mit Balken nach Zählzeiten');
+  const ex1 = [['4/4', '8 8 4 8 8 4'], ['4/4', '16 16 16 16 8 16 16 4 4'], ['4/4', '8. 16 4 r4 8 8'], ['3/4', '2 4'], ['3/4', '2.'], ['2/4', '4 r8 8'], ['6/8', '8 8 8 4 8'], ['6/8', '4. 4.'], ['4/4', '4. 8 2'], ['4/4', '1']];
+  for (const [m, s] of ex1) renderRhythm(cell(g1, `${m}: ${s}`, 'fünf Linien'), [R.parseRhythm(s)], m, { oneLine: false });
+  const g2 = sec('Modul 1: Lücke mit Fragezeichen');
+  renderRhythm(cell(g2, '4/4 mit Lücke an Position 2', '4 ? 8 8 4'), [[{ u: 12 }, { u: 12, gap: true }, { u: 6 }, { u: 6 }, { u: 12 }]], '4/4', { oneLine: false });
+  const g3 = sec('Modul 2: eine Linie (Schlagzeugschlüssel)');
+  const ex2 = ['t8 4 t8 4', '4 t8 4 4', '2 t4', '8 4 8 4 4', '4 8 4 8 4', 'r8 8 r8 8 r8 8 r8 8', '4. 4. 4 | r4 4 4 r4', '8 8 t8 4 4'];
+  for (const s of ex2) renderRhythm(cell(g3, s, 'eine Linie'), R.parseBars(s), '4/4');
+}
+if (section === 'pitch') {
+  const P = (s, a = 0, o = 4) => ({ step: s, alter: a, octave: o });
+  const g1 = sec('Modul 3: Tonnamen unter den Noten');
+  const sharps = [P(0, 1), P(1, 1), P(3, 1), P(4, 1), P(5, 1)];
+  const flats = [P(1, -1), P(2, -1), P(4, -1), P(5, -1), P(6, -1)];
+  renderPitches(cell(g1, 'Kreuz-Töne', 'cis dis fis gis ais'), sharps, { items: sharps.map((x) => ({ pitch: x, pre: `"_${T.germanName(x)}"` })) });
+  renderPitches(cell(g1, 'B-Töne', 'des es ges as b'), flats, { items: flats.map((x) => ({ pitch: x, pre: `"_${T.germanName(x)}"` })) });
+  const rare = [P(2, 1), P(3), P(6, 1), P(0, 0, 5), P(0, -1), P(6, 0, 3)];
+  renderPitches(cell(g1, 'Enharmonik', 'eis f · his c² · ces h'), rare, { items: rare.map((x) => ({ pitch: x, pre: `"_${T.germanName(x)}"` })) });
+  const { body } = T.abcNotes([P(3, 1), P(4), { ...P(3, 1), hideAccidental: true }, '|', P(3)]);
+  const { renderAbc } = await import('../js/ui/notation.js');
+  renderAbc(cell(g1, 'Gültigkeit im Takt', 'fis g fis | f'), T.abcTune({ body: body + ' |]', unit: '1/4' }));
+  renderPitches(cell(g1, 'Bassschlüssel: Einzeltöne', 'G A H c d e f g'), [P(4, 0, 2), P(5, 0, 2), P(6, 0, 2), P(0, 0, 3), P(1, 0, 3), P(2, 0, 3), P(3, 0, 3), P(4, 0, 3)], { clef: 'bass' });
+  const g2 = sec('Modul 5: Intervalle von c¹ (harmonisch) und mit Vorzeichen');
+  const c = P(0);
+  const iv = [[2, 'groß'], [3, 'klein'], [3, 'groß'], [4, 'rein'], [4, 'übermäßig'], [5, 'rein'], [6, 'klein'], [6, 'groß'], [7, 'klein'], [7, 'groß'], [8, 'rein']];
+  for (const [num, q] of iv) { const b = T.transpose(c, num, q); renderPitches(cell(g2, `${q}e ${T.INTERVAL_NAMES[num - 1]}`, `c¹ – ${T.germanNameOctave(b)}`), [c, b], { items: [{ chord: [c, b], len: '' }, c, b], staffwidth: 220 }); }
+  for (const [lo, num, q] of [[P(1, -1), 3, 'groß'], [P(3, 1), 3, 'klein'], [P(2, -1), 5, 'rein'], [P(5, 0), 6, 'klein'], [P(6, -1, 3), 4, 'rein']]) { const b = T.transpose(lo, num, q); renderPitches(cell(g2, `${q}e ${T.INTERVAL_NAMES[num - 1]} über ${T.germanName(lo)}`, `${T.germanNameOctave(lo)} – ${T.germanNameOctave(b)}`), [lo, b], { items: [lo, b], staffwidth: 220 }); }
+  const g3 = sec('Modul 6: Dreiklänge, Umkehrungen, Bassschlüssel, Stufen');
+  for (const t of ['dur', 'moll', 'vermindert', 'uebermaessig']) for (const r of [P(0), P(1), P(6), P(2, -1)]) { const ch = T.triad(r, t); renderPitches(cell(g3, `${T.chordSymbol(r, t)} (${t})`, ch.map(T.germanName).join(' ')), ch, { items: [{ chord: ch, len: '' }], staffwidth: 160 }); }
+  const C = T.triad(P(0), 'dur');
+  renderPitches(cell(g3, 'C-Dur: Grundstellung, Sext-, Quartsextakkord', 'c e g · e g c² · g c² e²'), C, { items: [{ chord: C, len: '' }, { chord: [C[1], C[2], P(0, 0, 5)], len: '' }, { chord: [C[2], P(0, 0, 5), P(2, 0, 5)], len: '' }], staffwidth: 260 });
+  renderPitches(cell(g3, 'Bassschlüssel: C-Dur, a-Moll, G-Dur', 'C3 · A2 · G2'), C, { clef: 'bass', items: [{ chord: T.triad(P(0, 0, 3), 'dur'), len: '' }, { chord: T.triad(P(5, 0, 2), 'moll'), len: '' }, { chord: T.triad(P(4, 0, 2), 'dur'), len: '' }], staffwidth: 260 });
+  const { diatonic } = await import('../js/modules/m6-akkorde.js');
+  for (const k of [P(0), P(4), P(3), P(2, -1)]) { const chs = [0, 1, 2, 3, 4, 5, 6].map((d) => diatonic(k, d)); renderPitches(cell(g3, `Stufen in ${T.capitalize(T.germanName(k))}-Dur`, chs.map((x) => x.map(T.germanName).join('')).join(' · ')), chs.flat(), { tonic: k, mode: 'dur', withKey: true, items: chs.map((x, d) => ({ chord: x, len: '', pre: `"_${['I', 'ii', 'iii', 'IV', 'V', 'vi', 'vii°'][d]}"` })), staffwidth: 320 }); }
+}
+window.__done = true;
+</script>
+</body>
+</html>

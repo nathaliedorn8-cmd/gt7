@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+<rect width="512" height="512" rx="112" fill="#0d0e13"/>
+<circle cx="256.0" cy="91.0" r="38" fill="#ffb224"/>
+<circle cx="319.1" cy="103.6" r="13" fill="#4a4f5c"/>
+<circle cx="372.7" cy="139.3" r="13" fill="#4a4f5c"/>
+<circle cx="408.4" cy="192.9" r="38" fill="#ff5aa8"/>
+<circle cx="421.0" cy="256.0" r="13" fill="#4a4f5c"/>
+<circle cx="408.4" cy="319.1" r="13" fill="#4a4f5c"/>
+<circle cx="372.7" cy="372.7" r="38" fill="#22c7b0"/>
+<circle cx="319.1" cy="408.4" r="13" fill="#4a4f5c"/>
+<circle cx="256.0" cy="421.0" r="13" fill="#4a4f5c"/>
+<circle cx="192.9" cy="408.4" r="13" fill="#4a4f5c"/>
+<circle cx="139.3" cy="372.7" r="38" fill="#9a7dff"/>
+<circle cx="103.6" cy="319.1" r="13" fill="#4a4f5c"/>
+<circle cx="91.0" cy="256.0" r="38" fill="#45adff"/>
+<circle cx="103.6" cy="192.9" r="13" fill="#4a4f5c"/>
+<circle cx="139.3" cy="139.3" r="13" fill="#4a4f5c"/>
+<circle cx="192.9" cy="103.6" r="13" fill="#4a4f5c"/>
+</svg>

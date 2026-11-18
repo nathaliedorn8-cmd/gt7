@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tests · Groove &amp; Theorie</title>
+<meta name="robots" content="noindex">
+<style>
+  body { font: 15px/1.5 system-ui, sans-serif; background: #0e0f14; color: #f2f3f7; margin: 0; padding: 20px; }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  .sum { font-weight: 700; margin: 8px 0 16px; padding: 10px 14px; border-radius: 10px; }
+  .ok { background: #0f3d2a; } .bad { background: #4a1420; }
+  li { margin: 2px 0; } li.f { color: #ff8a9a; }
+  ul { padding-left: 20px; }
+</style>
+</head>
+<body>
+<h1>Automatische Tests des Theorie-Kerns</h1>
+<div id="sum" class="sum">Tests laufen …</div>
+<ul id="out"></ul>
+<script type="module">
+  import { runAll } from './tests/suite.js';
+  const res = runAll();
+  const bad = res.filter((r) => !r.ok);
+  const sum = document.getElementById('sum');
+  sum.textContent = bad.length ? `✗ ${bad.length} von ${res.length} Tests fehlgeschlagen` : `✓ Alle ${res.length} Tests bestanden`;
+  sum.className = 'sum ' + (bad.length ? 'bad' : 'ok');
+  document.getElementById('out').innerHTML = res.map((r) =>
+    `<li class="${r.ok ? '' : 'f'}">${r.ok ? '✓' : '✗'} ${r.name}${r.ok ? '' : ' — ' + r.error}</li>`).join('');
+  window.__testResults = { total: res.length, failed: bad };
+</script>
+</body>
+</html>
