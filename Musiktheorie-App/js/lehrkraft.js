@@ -64,13 +64,15 @@ const topbar = h('header', { class: 'topbar no-print' },
 
 app.append(topbar,
   h('h1', {}, 'Bereich für Lehrkräfte'),
-  h('p', { class: 'muted' }, 'Diese Seite ist von der App aus nicht verlinkt. Gymnasium im Eilbektal · Fachschaft Musik · Jahrgang 7'),
+  h('p', { class: 'muted' }, 'Diese Seite ist von der App aus nicht verlinkt. Gymnasium im Eilbektal · Fachschaft Musik · Klassen 5 bis 8'),
   nav());
 
 function nav() {
   return h('p', { class: 'btn-row no-print' },
     ...[['qr', 'QR-Codes'], ['plan', 'Stundenvorschlag'], ['tipps', 'Praxis-Tipps'], ['loesungen', 'Lösungen'], ['daten', 'Datenschutz']]
-      .map(([id, t]) => h('a', { class: 'btn btn--sm', href: '#' + id }, t)));
+      .map(([id, t]) => h('a', { class: 'btn btn--sm', href: '#' + id }, t)),
+    // Lernkontrollen gibt es nur lokal auf dem Rechner der Lehrkraft (nicht online)
+    isLocal(location.href) ? h('a', { class: 'btn btn--sm btn--primary', href: 'lernkontrolle.html' }, 'Lernkontrollen (Tests drucken)') : null);
 }
 
 // --- QR ---
@@ -150,7 +152,7 @@ two.append(
 sol.append(h('h3', {}, 'Modul 3 · Enharmonik'),
   table(['Ton', 'gleiche Taste'], [['cis', 'des'], ['dis', 'es'], ['fis', 'ges'], ['gis', 'as'], ['ais', 'b'], ['eis', 'f'], ['his', 'c'], ['fes', 'e'], ['ces', 'h']]),
   h('h3', {}, 'Modul 4 · Tonleitern & Tonarten'),
-  h('p', {}, 'Dur: G G H G G G H (Halbtöne 3–4, 7–8) · natürliches Moll: G H G G H G G (Halbtöne 2–3, 5–6).'),
+  h('p', {}, 'Dur: G G H G G G H (Halbtöne 3–4, 7–8) · Moll: G H G G H G G (Halbtöne 2–3, 5–6).'),
   two,
   h('p', {}, 'Reihenfolge der Kreuze: fis – cis – gis – dis – ais – eis – his · der B: b – es – as – des – ges – ces – fes.'),
   h('h4', {}, 'Tonleitern (aufwärts)'),

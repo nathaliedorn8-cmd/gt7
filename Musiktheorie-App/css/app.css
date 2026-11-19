@@ -401,3 +401,9 @@ a.level:hover { border-color: var(--mod); transform: translateY(-1px); }
 .chord-chip small { display: block; font-family: var(--font); font-weight: 600; color: var(--muted); font-size: .72rem; }
 .chord-chip.is-now { border-color: var(--mod); background: color-mix(in srgb, var(--mod) 22%, var(--surface-2)); }
 .name-row { display: grid; gap: 4px; margin: 6px 0; }
+
+/* So geht's – Kurzanleitung auf der Startseite */
+.how { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 18px; margin: 0 0 20px; }
+.how__h { font-size: 1.15rem; margin: 0 0 8px; }
+.how__list { margin: 0; padding-left: 1.3em; display: grid; gap: 6px; }
+.how__list li::marker { font-weight: 700; color: var(--c4); }

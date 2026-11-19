@@ -79,10 +79,16 @@ function renderHome() {
   app.innerHTML = '';
   const st = S.load();
   const hero = h('section', { class: 'hero' },
-    h('p', { class: 'hero__kicker' }, 'Musiktheorie · Jahrgang 7'),
+    h('p', { class: 'hero__kicker' }, 'Musiktheorie · Klasse 5 bis 8'),
     h('h1', { class: 'hero__title' }, 'Versteh die Musik, die du spielst.'),
     h('p', { class: 'hero__text' }, 'Samba, Reggae, Clave, Gamelan, Pop: Hier lernst du das Handwerkszeug dahinter. Jedes Modul hat drei Stufen: Hop, Step und Jump.'),
     heroPattern());
+  const how = h('section', { class: 'how', 'aria-label': 'So geht’s' },
+    h('h2', { class: 'how__h' }, 'So geht’s'),
+    h('ol', { class: 'how__list' },
+      h('li', {}, h('b', {}, 'Modul antippen. '), 'Fang am besten mit Modul 1 an.'),
+      h('li', {}, h('b', {}, '„Check das“ lesen. '), 'Dort wird alles erklärt. Tippe auf die Knöpfe zum Anhören.'),
+      h('li', {}, h('b', {}, 'Üben: erst Hop, dann Step, dann Jump. '), 'Schaffst du 6 von 8 Aufgaben, geht die nächste Stufe auf.')));
   const grid = h('section', { class: 'mods', 'aria-label': 'Module' },
     MODULES.map((m) => {
       const p = S.moduleProgress(m.id);
@@ -105,7 +111,7 @@ function renderHome() {
     h('p', {}, 'Gymnasium im Eilbektal · Fachschaft Musik'),
     h('p', { class: 'muted small' }, 'Kein Login, kein Tracking. Dein Fortschritt bleibt nur auf diesem Gerät.'),
     h('p', { class: 'muted small' }, `Gesamt: ${st.xp} XP`));
-  app.append(topbar(false), hero, grid, foot);
+  app.append(topbar(false), hero, how, grid, foot);
 }
 
 function heroPattern() {
@@ -166,6 +172,7 @@ function renderModule(mod) {
 
   const practice = h('section', { class: 'practice', 'aria-labelledby': 'practice-h' },
     h('h2', { class: 'section-h', id: 'practice-h' }, h('span', { class: 'section-h__tag' }, 'Üben'), 'Hop · Step · Jump'),
+    h('p', { class: 'muted' }, 'Fang mit Hop an. Wenn du 6 von 8 Aufgaben schaffst, geht Step auf. Danach kommt Jump.'),
     h('div', { class: 'levels' }, S.LEVELS.map((l) => levelCard(mod, l))),
     challengeCard(mod));
 

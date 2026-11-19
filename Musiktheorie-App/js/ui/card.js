@@ -31,7 +31,7 @@ export function showCard(mod, levelName, scoreText) {
       h('div', {}, h('dt', {}, 'Datum'), h('dd', {}, date)),
       h('div', {}, h('dt', {}, 'Name'), h('dd', {}, nameOut))),
     h('ul', { class: 'lcard__levels' }, levels),
-    h('div', { class: 'lcard__foot' }, `Gesamt: ${st.xp} XP · Jahrgang 7 · Musik`));
+    h('div', { class: 'lcard__foot' }, `Gesamt: ${st.xp} XP · Musik`));
   const overlay = h('div', { class: 'overlay', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Lernstand-Karte' },
     h('div', { class: 'overlay__inner' },
       card,

@@ -1,6 +1,6 @@
 // Service Worker: macht die Seite offline nutzbar (PWA).
 // Bei jeder Veröffentlichung VERSION erhöhen, damit alle Geräte die neue Fassung laden.
-const VERSION = 'gt-2026-11-18d';
+const VERSION = 'gt-2026-11-19a';
 const CORE = [
   './', 'index.html', 'css/app.css', 'manifest.webmanifest',
   'vendor/abcjs-basic-min.js', 'fonts/inter.woff2', 'fonts/space-grotesk.woff2',

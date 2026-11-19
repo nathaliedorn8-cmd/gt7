@@ -96,7 +96,7 @@ export function letterUp(p, letters, semis) {
 
 export const SCALES = {
   dur: { name: 'Dur', steps: [2, 2, 1, 2, 2, 2, 1] },
-  moll: { name: 'natürliches Moll', steps: [2, 1, 2, 2, 1, 2, 2] },
+  moll: { name: 'Moll', steps: [2, 1, 2, 2, 1, 2, 2] },
 };
 
 /** Tonleiter aufwärts über eine Oktave (8 Töne inkl. Oktavton) */
@@ -171,7 +171,7 @@ export function relativeMajor(minorTonic) {
   return { step: s.step, alter: s.alter };
 }
 
-/** Tonarten für Jahrgang 7 */
+/** Tonarten im Unterricht (bis 3 Vorzeichen) */
 export const CURRICULUM_FIFTHS = [0, 1, 2, 3, -1, -2, -3];
 export const DUR_KEYS = CURRICULUM_FIFTHS.map((f) => tonicFromFifths(f, 'dur')); // C G D A F B Es
 export const MOLL_KEYS = CURRICULUM_FIFTHS.map((f) => tonicFromFifths(f, 'moll')); // a e h fis d g c

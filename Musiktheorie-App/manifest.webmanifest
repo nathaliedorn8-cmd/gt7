@@ -1,7 +1,7 @@
 {
   "name": "Groove & Theorie",
   "short_name": "Groove",
-  "description": "Interaktive Musiktheorie für Jahrgang 7 – Gymnasium im Eilbektal",
+  "description": "Interaktive Musiktheorie für die Klassen 5 bis 8 – Gymnasium im Eilbektal",
   "lang": "de",
   "start_url": "./",
   "scope": "./",

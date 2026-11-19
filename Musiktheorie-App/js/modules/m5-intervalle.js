@@ -38,7 +38,7 @@ function mnemoHtml(label) {
 const ALLOWED = {
   hop: [[1, 'rein'], [2, 'groß'], [3, 'groß'], [4, 'rein'], [5, 'rein'], [8, 'rein']],
   step: [[2, 'klein'], [2, 'groß'], [3, 'klein'], [3, 'groß'], [4, 'rein'], [5, 'rein'], [6, 'klein'], [6, 'groß'], [8, 'rein']],
-  jump: [[2, 'klein'], [2, 'groß'], [3, 'klein'], [3, 'groß'], [4, 'rein'], [4, 'übermäßig'], [5, 'rein'], [5, 'vermindert'], [6, 'klein'], [6, 'groß'], [7, 'klein'], [7, 'groß'], [8, 'rein']],
+  jump: [[2, 'klein'], [2, 'groß'], [3, 'klein'], [3, 'groß'], [4, 'rein'], [5, 'rein'], [6, 'klein'], [6, 'groß'], [7, 'klein'], [7, 'groß'], [8, 'rein']],
 };
 const labelOf = (n, q) => `${q}e ${T.INTERVAL_NAMES[n - 1]}`;
 const SEMIS = { 'reine Prime': 0, 'kleine Sekunde': 1, 'große Sekunde': 2, 'kleine Terz': 3, 'große Terz': 4, 'reine Quarte': 5, 'übermäßige Quarte': 6, 'verminderte Quinte': 6, 'reine Quinte': 7, 'kleine Sexte': 8, 'große Sexte': 9, 'kleine Septime': 10, 'große Septime': 11, 'reine Oktave': 12 };
@@ -101,7 +101,7 @@ function countInterval(level) {
 
 // --- Intervall genau bestimmen (mit Qualität) ---
 function fullInterval(level) {
-  const clef = level === 'jump' && Math.random() < 0.35 ? 'bass' : 'treble';
+  const clef = 'treble';
   const { a, b, iv } = randomInterval(level, { naturalOnly: level !== 'jump', clef });
   const harmonic = Math.random() < 0.4;
   const same = ALLOWED.jump.filter(([n]) => n === iv.number).map(([n, q]) => labelOf(n, q));
@@ -162,7 +162,7 @@ function hearInterval(level) {
   const pools = {
     hop: ['reine Prime', 'große Sekunde', 'große Terz', 'reine Quarte', 'reine Quinte', 'reine Oktave'],
     step: ['kleine Sekunde', 'große Sekunde', 'kleine Terz', 'große Terz', 'reine Quarte', 'reine Quinte', 'große Sexte', 'reine Oktave'],
-    jump: ['kleine Sekunde', 'große Sekunde', 'kleine Terz', 'große Terz', 'reine Quarte', 'übermäßige Quarte', 'reine Quinte', 'kleine Sexte', 'große Sexte', 'kleine Septime', 'große Septime', 'reine Oktave'],
+    jump: ['kleine Sekunde', 'große Sekunde', 'kleine Terz', 'große Terz', 'reine Quarte', 'reine Quinte', 'kleine Sexte', 'große Sexte', 'kleine Septime', 'große Septime', 'reine Oktave'],
   };
   const pool = pools[level === 'challenge' ? 'step' : level];
   const label = T.pick(pool);
@@ -209,7 +209,7 @@ function songTask() {
 
 // --- Halbtöne zählen ---
 function semisTask(level) {
-  const pool = level === 'jump' ? Object.keys(SEMIS) : ['kleine Sekunde', 'große Sekunde', 'kleine Terz', 'große Terz', 'reine Quarte', 'reine Quinte', 'kleine Sexte', 'große Sexte', 'reine Oktave'];
+  const pool = level === 'jump' ? Object.keys(SEMIS).filter((l) => SEMIS[l] !== 6) : ['kleine Sekunde', 'große Sekunde', 'kleine Terz', 'große Terz', 'reine Quarte', 'reine Quinte', 'kleine Sexte', 'große Sexte', 'reine Oktave'];
   const label = T.pick(pool);
   const s = SEMIS[label];
   const opts = [...new Set([s, s + 1, s - 1, s + 2, s - 2].filter((x) => x >= 0))].slice(0, 4);
@@ -368,9 +368,7 @@ function learnQuality(p) {
     ...rows.map(([l, s]) => h('tr', {}, h('td', {}, l), h('td', {}, String(s)), h('td', {}, h('button', { class: 'btn btn--sm btn--play', type: 'button', 'aria-label': `${l} anhören`, onclick: () => A.playMelody([60, 60 + s], { tempo: 96 }) }, '▶'))))));
   p.append(h('p', { class: 'staff-cap', style: { color: 'var(--text)', fontWeight: '700' } }, 'Große und kleine Terz im Vergleich'));
   staffWithPlay(p, [P(0), P(2), P(2), P(4)], { items: [{ chord: [P(0), P(2)], len: '', pre: '"_c–e: groß"' }, { chord: [P(2), P(4)], len: '', pre: '"_e–g: klein"' }], staffwidth: 240, ariaLabel: 'c–e und e–g', onPlay: () => A.playSequence([{ midis: [60, 64], beat: 0, beats: 1.5 }, { midis: [64, 67], beat: 2, beats: 1.5 }], { tempo: 80 }) });
-  p.append(callout('Tritonus:', 'Die übermäßige Quarte (z. B. f–h) und die verminderte Quinte (h–f) haben beide 6 Halbtöne. Weil das drei Ganztöne sind, heißt dieser Abstand Tritonus.'),
-    callout('Bassschlüssel:', 'Intervalle bestimmst du im Bassschlüssel genauso. Nur die Tonnamen auf den Linien sind andere: Die Linie zwischen den Punkten ist f.'));
-  staffWithPlay(p, [P(2, 0, 3), P(0, 0, 4)], { clef: 'bass', items: [{ chord: [P(2, 0, 3), P(0, 0, 4)], len: '' }], staffwidth: 180, ariaLabel: 'e – c¹ im Bassschlüssel: kleine Sexte', playLabel: 'e – c¹: kleine Sexte' });
+  p.append(callout('Tritonus:', 'Zwischen Quarte und Quinte liegt ein Abstand mit 6 Halbtönen (z. B. f–h). Er heißt Tritonus und klingt sehr spannungsvoll.'));
 }
 
 function learnMnemo(p) {
@@ -407,9 +405,9 @@ export default {
   ready: true,
   renderLearn,
   levelInfo: {
-    hop: 'Intervalle zählen, reine Intervalle und große Sekunde/Terz hören und spielen.',
-    step: 'Klein, groß, rein: genau bestimmen, Halbtöne zählen, Liedanfänge.',
-    jump: 'Mit Vorzeichen, Tritonus, Septimen, Bassschlüssel, notieren und Fehler finden.',
+    hop: 'Intervalle zählen (Sekunde, Terz …), hören und auf der Klaviatur spielen.',
+    step: 'Groß, klein oder rein? Halbtöne zählen, Liedanfänge erkennen.',
+    jump: 'Mit Vorzeichen, Septimen, Intervalle selbst notieren, Fehler finden.',
   },
   generators: {
     hop: [countInterval, hearInterval, songTask, buildOnKeys, countInterval, hearInterval],

@@ -88,7 +88,7 @@ const KEYS = { easy: [P(0), P(4), P(3)], all: [P(0), P(4), P(3), P(1), P(6, -1),
 // =====================================================================
 
 function hearType(level) {
-  const types = level === 'hop' ? ['dur', 'moll'] : level === 'step' ? ['dur', 'moll', 'vermindert'] : TYPES;
+  const types = level === 'jump' ? TYPES : ['dur', 'moll'];
   const { root, type, ch } = randomTriad('step', types);
   return mc({
     kind: 'Hören',
@@ -103,9 +103,9 @@ function hearType(level) {
 }
 
 function typeByNotes(level) {
-  const types = level === 'jump' ? TYPES : ['dur', 'moll', 'vermindert'];
+  const types = level === 'jump' ? TYPES : ['dur', 'moll'];
   const { root, type, ch } = randomTriad(level === 'hop' ? 'hop' : 'step', level === 'hop' ? ['dur', 'moll'] : types);
-  const clef = level === 'jump' && Math.random() < 0.45 ? 'bass' : 'treble';
+  const clef = 'treble';
   const shown = clef === 'bass' ? toBass(ch) : ch;
   return mc({
     kind: clef === 'bass' ? 'Bassschlüssel' : 'Notenbild',
@@ -185,7 +185,7 @@ function inversionTask(level) {
   const { root, type, ch } = randomTriad(level === 'jump' ? 'step' : 'hop', ['dur', 'moll']);
   const inv = T.rand(3);
   let shown = invert(ch, inv);
-  const clef = level === 'jump' && Math.random() < 0.4 ? 'bass' : 'treble';
+  const clef = 'treble';
   if (clef === 'bass') shown = toBass(shown);
   const askRoot = level === 'jump' && Math.random() < 0.5;
   if (askRoot) {
@@ -318,10 +318,6 @@ function learnTriads(p) {
     p.append(h('p', { class: 'staff-cap', style: { color: 'var(--text)', fontWeight: '700', marginTop: '8px' } }, `${chordName(c, t)} (${T.chordSymbol(c, t)}): ${T.TRIADS[t].thirds[0]} + ${T.TRIADS[t].thirds[1]} Terz`));
     chordStaff(p, ch, { label: chordName(c, t), playLabel: TYPE_NAME[t] });
   });
-  p.append(h('h3', {}, 'Im Bassschlüssel'),
-    h('p', {}, 'Bassinstrumente und die linke Hand am Klavier lesen den Bassschlüssel. Der Akkord bleibt derselbe – nur tiefer.'));
-  chordStaff(p, T.triad(P(0, 0, 3), 'dur'), { clef: 'bass', label: 'C-Dur im Bassschlüssel', playLabel: 'C-Dur (Bass)' });
-  chordStaff(p, T.triad(P(5, 0, 2), 'moll'), { clef: 'bass', label: 'a-Moll im Bassschlüssel', playLabel: 'a-Moll (Bass)' });
   p.append(callout('Akkordsymbole:', 'C = C-Dur, Am = a-Moll, H° = h-vermindert, C+ = C-übermäßig. Mit deutschen Namen: H-Dur heißt H, B-Dur heißt B (international B♭).'));
 }
 
@@ -458,13 +454,13 @@ export default {
   ready: true,
   renderLearn,
   levelInfo: {
-    hop: 'Dur und Moll hören und erkennen, Dur-Dreiklänge bauen, I – IV – V.',
-    step: 'Vermindert, Akkordsymbole, Umkehrungen, Stufen in Dur, Moll-Dreiklänge bauen.',
-    jump: 'Übermäßig, Bassschlüssel, Grundton in Umkehrungen, Trugschluss, Fehlersuche.',
+    hop: 'Dur und Moll hören und erkennen, Dur-Dreiklänge bauen.',
+    step: 'Moll-Dreiklänge bauen, Akkordsymbole (C, Am …), Akkorde einer Tonart.',
+    jump: 'Vermindert und übermäßig, Umkehrungen, Akkordfolgen, Fehler finden.',
   },
   generators: {
-    hop: [hearType, typeByNotes, buildTriad, thirdsTask, degreeTask, hearType],
-    step: [hearType, typeByNotes, buildTriad, symbolTask, inversionTask, degreeTask, progressionTask, thirdsTask],
+    hop: [hearType, typeByNotes, buildTriad, thirdsTask, hearType, buildTriad],
+    step: [hearType, typeByNotes, buildTriad, symbolTask, degreeTask, thirdsTask],
     jump: [typeByNotes, buildTriad, inversionTask, symbolTask, degreeTask, progressionTask, fixChord, hearType],
   },
   speedGenerators: [() => typeByNotes('step'), () => symbolTask('step'), () => degreeTask('step'), thirdsTask],

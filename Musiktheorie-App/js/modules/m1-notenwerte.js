@@ -24,7 +24,7 @@ function sumText(items) {
 // ---------- Zufallstakte, die nach Zählzeiten sinnvoll notiert sind ----------
 const BEAT_PATTERNS = {
   hop: ['4', '8 8', 'r4'],
-  step: ['4', '8 8', '16 16 16 16', '8 16 16', '16 16 8', 'r4', 'r8 8'],
+  step: ['4', '8 8', '16 16 16 16', 'r4', 'r8 8'],
   jump: ['4', '8 8', '16 16 16 16', '8 16 16', '16 16 8', '8. 16', 'r4', 'r8 8'],
 };
 const TWO_BEAT = { hop: ['2'], step: ['2'], jump: ['2', '4. 8'] };
@@ -403,14 +403,14 @@ export default {
   ready: true,
   renderLearn,
   levelInfo: {
-    hop: 'Ganze bis Achtel erkennen, Notenwerte rechnen, Takte füllen.',
-    step: 'Sechzehntel, Pausen, Lücken finden, Taktarten, Rhythmen hören.',
-    jump: 'Punktierte Noten, 6/8-Takt, Fehlersuche, schwierigere Hörbeispiele.',
+    hop: 'Ganze, halbe, Viertel- und Achtelnoten erkennen und zählen.',
+    step: 'Sechzehntel und Pausen, Takte füllen, Taktarten erkennen.',
+    jump: 'Punktierte Noten, 6/8-Takt, Fehler finden.',
   },
   generators: {
-    hop: [nameValue, countFit, fillMeasure, restMatch, hearRhythm, missingValue],
-    step: [nameValue, countFit, fillMeasure, missingValue, errorMeasure, meterTask, hearRhythm, restMatch],
-    jump: [nameValue, dotTask, fillMeasure, missingValue, errorMeasure, meterTask, hearRhythm, countFit],
+    hop: [nameValue, countFit, restMatch, fillMeasure, hearRhythm, nameValue],
+    step: [nameValue, countFit, fillMeasure, missingValue, meterTask, restMatch, hearRhythm],
+    jump: [dotTask, fillMeasure, missingValue, errorMeasure, meterTask, hearRhythm, nameValue],
   },
   speedGenerators: [nameValue, countFit, () => meterTask('step'), restMatch, dotTask],
   facts,

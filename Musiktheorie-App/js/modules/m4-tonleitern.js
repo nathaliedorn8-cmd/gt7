@@ -46,7 +46,7 @@ function staffWithPlay(container, pitches, opts = {}) {
 function solutionScale(k, m, { withKey = false, clef = 'treble' } = {}) {
   return (el) => {
     const p = scaleAt(k, m, clef);
-    el.append(h('p', { class: 'staff-cap' }, `Lösung: ${KN(k, m)}${m === 'moll' ? ' (natürlich)' : ''} – Halbtonschritte mit Bogen`));
+    el.append(h('p', { class: 'staff-cap' }, `Lösung: ${KN(k, m)} – Halbtonschritte mit Bogen`));
     staffWithPlay(el, p, { items: withSlurs(p, T.halfStepDegrees(m)), tonic: k, mode: m, withKey, clef, ariaLabel: `${KN(k, m)} in Noten`, playLabel: 'Lösung anhören' });
   };
 }
@@ -99,10 +99,10 @@ function mc({ kind, title, hint, options, explain, pre, cols, solution }) {
 // --- Halbtonschritte markieren ---
 function markHalfSteps(level) {
   const m = level === 'hop' ? 'dur' : level === 'step' ? 'moll' : T.pick(['dur', 'moll']);
-  const pool = level === 'hop' ? DUR.slice(0, 5) : m === 'dur' ? DUR : MOLL;
+  const pool = level === 'hop' ? [DUR[0], DUR[1], DUR[4]] : m === 'dur' ? DUR : MOLL;
   const k = T.pick(pool);
   const withKey = level === 'jump';
-  const clef = level === 'jump' && Math.random() < 0.4 ? 'bass' : 'treble';
+  const clef = 'treble';
   const p = scaleAt(k, m, clef);
   const correct = T.halfStepDegrees(m);
   const sel = new Set();
@@ -145,7 +145,7 @@ function markHalfSteps(level) {
       const pairs = correct.map((d) => `${d}. und ${d + 1}. Stufe (${nm(p[d - 1])}–${nm(p[d])})`).join(' sowie der ');
       return {
         ok,
-        explain: `<p>In ${m === 'dur' ? 'Dur' : 'natürlichem Moll'} liegen die Halbtonschritte immer zwischen der ${pairs}. Alle anderen Schritte sind Ganztonschritte.</p>`
+        explain: `<p>In ${m === 'dur' ? 'Dur' : 'Moll'} liegen die Halbtonschritte immer zwischen der ${pairs}. Alle anderen Schritte sind Ganztonschritte.</p>`
           + (m === 'dur' ? '' : '<p>Merke: Dur 3–4 und 7–8, Moll 2–3 und 5–6.</p>'),
         solution: solutionScale(k, m, { withKey, clef }),
       };
@@ -155,7 +155,7 @@ function markHalfSteps(level) {
 
 // --- Tonleiter auf der Klaviatur bauen ---
 function buildOnKeyboard(level) {
-  const pool = level === 'hop' ? [DUR[0], DUR[1], DUR[4]].map((k) => ({ k, m: 'dur' })).concat([{ k: MOLL[0], m: 'moll' }]) : ALL_KEYS;
+  const pool = level === 'hop' ? [DUR[0], DUR[1], DUR[4]].map((k) => ({ k, m: 'dur' })) : level === 'step' ? ALL_KEYS.filter((x) => Math.abs(T.keyFifths(x.k, x.m)) <= 2) : ALL_KEYS;
   const { k, m } = T.pick(pool);
   const exp = scaleAt(k, m);
   const expMidi = exp.map(T.midi);
@@ -244,7 +244,7 @@ function blocksTask(level) {
   }
   return {
     kind: 'Baukasten',
-    title: `Bau das Schrittmuster von ${m === 'dur' ? 'Dur' : 'natürlichem Moll'}.`,
+    title: `Bau das Schrittmuster von ${m === 'dur' ? 'Dur' : 'Moll'}.`,
     hint: `Zieh die Bausteine in die Felder oder tippe sie an. Mit „Anhören“ hörst du dein Muster (Startton: ${T.germanNameOctave(scaleAt(k, m)[0])}).`,
     render(body, ctx) {
       blocks = createBlocks(body, { onChange: (v) => ctx.setReady(v.every(Boolean)) });
@@ -325,13 +325,13 @@ function degreeTask(level) {
 }
 
 // --- Regelwissen: Wo liegen die Halbtonschritte? ---
-function ruleTask() {
-  const m = T.pick(['dur', 'moll']);
+function ruleTask(level) {
+  const m = level === 'hop' ? 'dur' : T.pick(['dur', 'moll']);
   const opts = ['3–4 und 7–8', '2–3 und 5–6', '4–5 und 7–8', '3–4 und 6–7'];
   const corr = m === 'dur' ? opts[0] : opts[1];
   return mc({
     kind: 'Regel',
-    title: `Zwischen welchen Stufen liegen in ${m === 'dur' ? 'Dur' : 'natürlichem Moll'} die Halbtonschritte?`,
+    title: `Zwischen welchen Stufen liegen in ${m === 'dur' ? 'Dur' : 'Moll'} die Halbtonschritte?`,
     cols: true,
     options: opts.map((o) => ({ label: o, correct: o === corr })),
     explain: `<p>Dur: <strong>3–4 und 7–8</strong> (G G H G G G H). Natürliches Moll: <strong>2–3 und 5–6</strong> (G H G G H G G).</p>`,
@@ -413,7 +413,7 @@ function readKeyTask(level) {
   const both = level === 'jump' || level === 'challenge';
   const idx = T.rand(7);
   const k = DUR[idx];
-  const clef = both && Math.random() < 0.5 ? 'bass' : 'treble';
+  const clef = 'treble';
   const others = pickN([0, 1, 2, 3, 4, 5, 6], 3, (i) => i === idx);
   const label = (i) => (both ? `${KN(DUR[i], 'dur')} / ${KN(MOLL[i], 'moll')}` : KN(DUR[i], 'dur'));
   const f = T.CURRICULUM_FIFTHS[idx];
@@ -425,7 +425,7 @@ function readKeyTask(level) {
   return mc({
     kind: 'Generalvorzeichen',
     title: both ? 'Welche zwei Tonarten haben diese Generalvorzeichen?' : 'Welche Dur-Tonart ist das?',
-    hint: clef === 'bass' ? 'Achtung: Bassschlüssel!' : '',
+    hint: 'Schau auf die Vorzeichen ganz am Anfang der Zeile.',
     pre: (body) => {
       const box = h('div', { style: { maxWidth: '260px' } });
       body.append(box);
@@ -640,8 +640,7 @@ function learnDurMoll(p) {
   const cm = scaleAt(MOLL[6], 'moll');
   p.append(h('div', { class: 'btn-row' },
     playButton('C-Dur', () => A.playMelody(cs.map(T.midi), { tempo: 120 })),
-    playButton('c-Moll', () => A.playMelody(cm.map(T.midi), { tempo: 120 }))),
-  h('p', { class: 'muted small' }, 'Neben dem natürlichen Moll gibt es noch harmonisches und melodisches Moll – die kommen später.'));
+    playButton('c-Moll', () => A.playMelody(cm.map(T.midi), { tempo: 120 }))));
 }
 
 function learnKeys(p) {
@@ -655,8 +654,8 @@ function learnKeys(p) {
   staffWithPlay(p, gs, { tonic: G, mode: 'dur', withKey: true, ariaLabel: 'G-Dur mit Generalvorzeichen fis', playLabel: 'Anhören' });
 
   // Tonarten-Explorer
-  p.append(h('h3', {}, 'Deine Tonarten für Jahrgang 7'),
-    h('p', { class: 'muted small' }, 'Tippe eine Tonart an. Mit dem Schalter siehst du sie im Violin- oder Bassschlüssel.'));
+  p.append(h('h3', {}, 'Deine Tonarten'),
+    h('p', { class: 'muted small' }, 'Tippe eine Tonart an. Mit „Dur“ und „Moll“ schaltest du um.'));
   const chips = h('div', { class: 'toggles', style: { gridTemplateColumns: 'repeat(7, 1fr)' }, role: 'group', 'aria-label': 'Tonart wählen' });
   const modeChips = h('div', { class: 'btn-row' });
   const out = h('div', {});
@@ -679,9 +678,7 @@ function learnKeys(p) {
   const mbtn = (label, attrs, fn) => h('button', { class: 'tab', type: 'button', ...attrs, onclick: fn }, label);
   modeChips.append(
     mbtn('Dur', { 'data-v': 'dur' }, () => { mode = 'dur'; draw(); }),
-    mbtn('Moll', { 'data-v': 'moll' }, () => { mode = 'moll'; draw(); }),
-    mbtn('Violin', { 'data-c': 'treble' }, () => { clef = 'treble'; draw(); }),
-    mbtn('Bass', { 'data-c': 'bass' }, () => { clef = 'bass'; draw(); }));
+    mbtn('Moll', { 'data-v': 'moll' }, () => { mode = 'moll'; draw(); }));
   modeChips.querySelectorAll('.tab').forEach((b) => b.setAttribute('aria-pressed', 'false'));
   p.append(modeChips, chips, out);
   // aria-pressed für Tabs optisch wie aria-selected
@@ -701,7 +698,7 @@ function learnKeys(p) {
 function learnCircle(p) {
   p.append(h('h3', {}, 'Der Quintenzirkel'),
     h('p', {}, 'Er ordnet alle Tonarten nach ihren Vorzeichen. Im Uhrzeigersinn geht es jeweils eine Quinte nach oben, und es kommt ein Kreuz dazu. Gegen den Uhrzeigersinn geht es eine Quinte nach unten, und es kommt ein B dazu. Außen stehen die Dur-Tonarten, innen ihre parallelen Moll-Tonarten.'),
-    h('p', { class: 'muted small' }, 'Hervorgehoben: deine Tonarten für Jahrgang 7. Tippe ein Feld an.'));
+    h('p', { class: 'muted small' }, 'Hervorgehoben: die Tonarten bis 3 Vorzeichen. Tippe ein Feld an.'));
   const info = h('div', { 'aria-live': 'polite' });
   createCircle(p, {
     dimOutside: true,
@@ -790,14 +787,14 @@ export default {
   ready: true,
   renderLearn,
   levelInfo: {
-    hop: 'Halbtonschritte finden, C-, G- und F-Dur bauen, Dur und Moll hören.',
-    step: 'Alle Tonarten bis 3 Vorzeichen, Moll, Generalvorzeichen lesen, Paralleltonarten.',
-    jump: 'Quintenzirkel, Generalvorzeichen setzen, Fehler finden, Bassschlüssel, Pentatonik.',
+    hop: 'C-, G- und F-Dur: Halbtonschritte finden, Tonleitern bauen, Dur und Moll hören.',
+    step: 'Weitere Tonarten, Moll, Vorzeichen am Zeilenanfang lesen.',
+    jump: 'Vorzeichen selbst setzen, Fehler finden, Quintenzirkel, Pentatonik.',
   },
   generators: {
-    hop: [markHalfSteps, buildOnKeyboard, blocksTask, hearTask, degreeTask, ruleTask],
-    step: [buildOnKeyboard, fixTask, readKeyTask, parallelTask, markHalfSteps, blocksTask, hearTask, degreeTask],
-    jump: [circleTask, buildKeyTask, hearTask, fixTask, readKeyTask, markHalfSteps, pentaTask, buildOnKeyboard],
+    hop: [markHalfSteps, buildOnKeyboard, blocksTask, hearTask, ruleTask, degreeTask],
+    step: [buildOnKeyboard, readKeyTask, parallelTask, markHalfSteps, blocksTask, hearTask, degreeTask],
+    jump: [buildKeyTask, fixTask, readKeyTask, pentaTask, circleTask, buildOnKeyboard, markHalfSteps],
   },
   speedGenerators: [degreeTask, () => readKeyTask('step'), parallelTask, ruleTask, pentaTask],
   facts,

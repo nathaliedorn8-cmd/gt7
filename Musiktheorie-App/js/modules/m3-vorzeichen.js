@@ -13,14 +13,14 @@ const NO = T.germanNameOctave;
 /** Tonnamen mit Oktavangabe nur bei Bedarf */
 const nameO = (p) => NO(p);
 
-// Töne im Umfang c¹–h¹ (Hop: Stammtöne; Step: + ein Vorzeichen; Jump: + eis, his, ces, fes)
+// Töne im Umfang c¹–h¹ (Hop: Stammtöne; Step und Jump: + ein Vorzeichen auf schwarzen Tasten)
 const NATURALS = [0, 1, 2, 3, 4, 5, 6].map((s) => P(s));
 const COMMON = [P(0, 1), P(1, -1), P(1, 1), P(2, -1), P(3, 1), P(4, -1), P(4, 1), P(5, -1), P(5, 1), P(6, -1)];
 const RARE = [P(2, 1), P(6, 1, 4), P(0, -1, 4), P(3, -1)];
 function pool(level) {
   if (level === 'hop') return NATURALS;
   if (level === 'step') return [...NATURALS, ...COMMON];
-  return [...NATURALS, ...COMMON, ...RARE];
+  return [...NATURALS, ...COMMON];
 }
 const midiName = {
   0: ['c'], 1: ['cis', 'des'], 2: ['d'], 3: ['dis', 'es'], 4: ['e'], 5: ['f'], 6: ['fis', 'ges'], 7: ['g'], 8: ['gis', 'as'], 9: ['a'], 10: ['ais', 'b'], 11: ['h'],
@@ -129,7 +129,7 @@ function nameKey(level) {
 
 // --- Note im Notensystem benennen ---
 function nameNote(level) {
-  const clef = level === 'jump' && Math.random() < 0.5 ? 'bass' : 'treble';
+  const clef = 'treble';
   const base = T.pick(pool(level));
   const octave = clef === 'bass' ? (base.step >= 5 ? 2 : 3) : (Math.random() < 0.3 && base.step <= 4 ? 5 : 4);
   const p = { ...base, octave };
@@ -227,7 +227,7 @@ function validityTask(level) {
 
 // --- Enharmonik ---
 function enharmonicTask() {
-  const pairs = [[P(3, 1), P(4, -1)], [P(0, 1), P(1, -1)], [P(1, 1), P(2, -1)], [P(4, 1), P(5, -1)], [P(5, 1), P(6, -1)], [P(2, 1), P(3, 0)], [P(6, 1), P(0, 0)], [P(0, -1), P(6, 0)], [P(3, -1), P(2, 0)]];
+  const pairs = [[P(3, 1), P(4, -1)], [P(0, 1), P(1, -1)], [P(1, 1), P(2, -1)], [P(4, 1), P(5, -1)], [P(5, 1), P(6, -1)]];
   const [a, b] = T.shuffle(T.pick(pairs));
   const correct = nm(b);
   const wrong = [nm({ ...b, alter: b.alter + (b.alter >= 0 ? -1 : 1) }), nm({ step: (a.step + 2) % 7, alter: 0 }), nm({ ...a, alter: 0 })].filter((x) => x !== correct && x !== nm(a));
@@ -255,7 +255,7 @@ function enharmonicTask() {
 
 // --- Vorzeichen setzen (Notenbild) ---
 function setAccidental(level) {
-  const target = T.pick(level === 'jump' ? [...COMMON, ...RARE] : COMMON);
+  const target = T.pick(COMMON);
   const p = { ...target, octave: target.octave ?? 4 };
   let alter = 0;
   let box, api;
@@ -417,10 +417,6 @@ function learnEnh(p) {
     h('p', {}, 'Jede schwarze Taste hat zwei Namen: Von unten gesehen ist es ein Kreuz-Ton, von oben ein B-Ton. fis und ges klingen gleich – sie werden nur anders geschrieben. Das nennt man enharmonische Verwechslung.'));
   const pairs = [[P(0, 1), P(1, -1)], [P(3, 1), P(4, -1)], [P(5, 1), P(6, -1)]];
   pairs.forEach(([a, b]) => staffWithPlay(p, [a, b], { items: [{ pitch: a, pre: `"_${nm(a)}"` }, { pitch: b, pre: `"_${nm(b)}"` }], staffwidth: 220, ariaLabel: `${nm(a)} und ${nm(b)}`, playLabel: `${nm(a)} = ${nm(b)}` }));
-  p.append(h('h3', {}, 'Auch weiße Tasten haben Zweitnamen'),
-    h('p', {}, 'Weil zwischen e–f und h–c keine schwarze Taste liegt, gilt: eis = f, his = c, fes = e, ces = h. Diese Namen braucht man in manchen Tonarten – zum Beispiel hat Fis-Dur ein eis.'));
-  const w = [[P(2, 1), P(3)], [P(6, 1), P(0, 0, 5)]];
-  w.forEach(([a, b]) => staffWithPlay(p, [a, b], { items: [{ pitch: a, pre: `"_${nm(a)}"` }, { pitch: b, pre: `"_${nm(b)}"` }], staffwidth: 220, ariaLabel: `${nm(a)} und ${nm(b)}`, playLabel: `${nm(a)} = ${nm(b)}` }));
   p.append(callout('Warum nicht einfach immer gleich?', 'Der Name hängt von der Tonleiter ab: In jeder Tonleiter kommt jeder Buchstabe genau einmal vor. In D-Dur heißt der Ton fis (nicht ges), weil g schon vorkommt.'));
 }
 
@@ -442,14 +438,14 @@ export default {
   ready: true,
   renderLearn,
   levelInfo: {
-    hop: 'Stammtöne finden, Halbton und Ganzton auf der Klaviatur, Tonnamen lesen.',
-    step: 'Kreuz und B, schwarze Tasten benennen, Gültigkeit im Takt, Hören.',
-    jump: 'Enharmonik (fis = ges, eis = f …), Bassschlüssel, Fehlersuche.',
+    hop: 'Weiße Tasten finden und benennen, Halbton oder Ganzton?',
+    step: 'Kreuz und B: schwarze Tasten benennen, Noten mit Vorzeichen lesen.',
+    jump: 'Ein Ton – zwei Namen (fis = ges), Vorzeichen im Takt, Fehler finden.',
   },
   generators: {
-    hop: [htGtKeys, findKey, nameKey, nameNote, stepFrom, hearStep],
-    step: [htGtKeys, findKey, nameKey, nameNote, stepFrom, validityTask, setAccidental, hearStep],
-    jump: [enharmonicTask, nameNote, validityTask, setAccidental, errorNames, stepFrom, hearStep, enharmonicTask],
+    hop: [htGtKeys, findKey, nameKey, nameNote, hearStep, htGtKeys],
+    step: [nameKey, nameNote, stepFrom, validityTask, setAccidental, findKey, hearStep],
+    jump: [enharmonicTask, validityTask, setAccidental, errorNames, stepFrom, nameNote],
   },
   speedGenerators: [() => nameNote('step'), () => nameKey('step'), () => stepFrom('step'), enharmonicTask, () => htGtKeys('step')],
   facts,
